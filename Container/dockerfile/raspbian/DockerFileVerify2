@@ -1,0 +1,68 @@
+#
+# Pass variables with --build-arg option
+# MY_REGISTRY : Your Container Registry
+# 
+ARG MY_REGISTRY=berry999
+
+#
+# Use Base image built in the previous step
+#
+FROM ${MY_REGISTRY}/openvino:base0001
+#
+# Local variables
+#
+ARG OPENVINO_VER=2020.1.023
+ARG OPENVINO=l_openvino_toolkit_p_${OPENVINO_VER}
+ARG INSTALL_DIR=/opt/intel/openvino
+ARG INTEL_OPENVINO_DIR=/opt/intel/openvino
+ARG OPENVINO_DOWNLOAD=https://download.01.org/opencv/2020/openvinotoolkit/2020.1/l_openvino_toolkit_runtime_raspbian_p_${OPENVINO_VER}.tgz
+
+#
+# Run as root to install OpenVINO Toolkit
+#
+USER root
+#
+# Use /tmp folder
+#
+WORKDIR /tmp
+
+RUN apt-get update -y
+RUN apt-get upgrade -y
+#
+# Download OpenVINO Toolkit
+# Run silent install
+# Setup environment variable
+RUN curl -LOJ "${OPENVINO_DOWNLOAD}"
+RUN mkdir -p /opt/intel/openvino
+RUN tar -xf  l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz --strip 1 -C ${INSTALL_DIR}
+
+RUN echo "source ${INSTALL_DIR}/bin/setupvars.sh" >> ~/.bashrc
+RUN usermod -a -G users "$(whoami)"
+
+RUN chmod +x "${INSTALL_DIR}/install_dependencies/install_NCS_udev_rules.sh"
+RUN /bin/bash -c "source ${INSTALL_DIR}/bin/setupvars.sh" && \
+    sh /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh
+
+#ENV INSTALLDIR ${INSTALL_DIR}
+
+#
+# Set user to openvino and current directory to /home/openvino
+#
+#USER openvino
+#WORKDIR /home/openvino
+
+#
+# Set user to openvino and current directory to /home/openvino
+#
+#
+# Image Classification Sample
+#
+COPY berrytsai.png ./berrytsai.png
+RUN curl -LOJ "https://download.01.org/opencv/2020/openvinotoolkit/2020.1/open_model_zoo/models_bin/1/face-detection-retail-0004/FP16/face-detection-retail-0004.bin" 
+RUN curl -LOJ "https://download.01.org/opencv/2020/openvinotoolkit/2020.1/open_model_zoo/models_bin/1/face-detection-retail-0004/FP16/face-detection-retail-0004.xml" 
+
+RUN mkdir Release
+COPY ./libformat_reader.so .
+COPY ./object_detection_sample_ssd .
+RUN chmod a+x ./object_detection_sample_ssd
+RUN chmod a+x ./libformat_reader.so

@@ -1,0 +1,3 @@
+FROM scratch
+ADD ./raspbian-buster-lite.tar.gz /
+CMD ["/bin/bash"]

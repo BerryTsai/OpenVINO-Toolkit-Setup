@@ -1,0 +1,54 @@
+#
+# Raspbian Version
+#
+FROM berry999/raspberrypi:20200213
+
+#
+# Run as root user
+#
+USER root
+WORKDIR /
+
+#
+# Install libraries
+#
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+                libqt4-test \
+                festival \
+				python3-dev \
+                python3-pip \
+				x11vnc \
+				liblivemedia-dev \
+				libv4l-dev \
+				cmake \
+				python-matplotlib \
+				vlc \
+				libatlas-base-dev \
+				libqtgui4 \
+				python3-pyqt5 \
+                libjasper-dev \
+				libopenexr-dev \
+                libgstreamer1.0-0 	 
+RUN pip3 install setuptools
+RUN pip3 install wheel
+RUN pip3 install numpy==1.15.2
+RUN pip3 install opencv-python==3.4.6.27
+# Clean
+#
+RUN rm -rf /var/lib/apt/lists/*
+#
+# Create user `openvino`
+#
+RUN useradd -ms /bin/bash -G video,users openvino && \
+   chown openvino -R /home/openvino
+
+
+#
+# Change user to openvino
+#
+ENV USER=openvino
+USER openvino
+WORKDIR /home/openvino
+
+ENTRYPOINT []

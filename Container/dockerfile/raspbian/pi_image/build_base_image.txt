@@ -1,0 +1,24 @@
+Build RPI base image
+
+#use loop device to mount image
+sudo losetup -Pr /dev/loop10 <xx>.img 
+mkdir rpi 
+sudo mount -o ro /dev/loop10p2 ./rpi 
+
+#packaged to tar.gz
+sudo tar -C ./rpi -czpf raspbian-buster-lite.tar.gz --numeric-owner .
+
+#build dockefile
+sudo nano dockerfile
+-----------------------------------------------------
+FROM scratch
+ADD ./raspbian-buster-lite.tar.gz /
+CMD ["/bin/bash"]
+-----------------------------------------------------
+
+#build container 
+docker build -t <xxxx.xxxxxx> .
+
+#cancel mount
+sudo umount ./rpi
+sudo losetup -d /dev/loop10
